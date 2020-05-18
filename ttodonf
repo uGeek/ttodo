@@ -1,0 +1,12 @@
+#!/bin/bash
+
+notify-send "Inicio del contador"
+
+REFRESCO="300"
+T="0"
+while true
+do
+    sleep $REFRESCO
+    T=$(echo $((5 + $T)))
+    notify-send "$(cat ~/.config/task.tiempo | cut -d " " -f1-6)" "$T minutos"
+done
