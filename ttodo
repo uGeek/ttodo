@@ -1,0 +1,103 @@
+#!/bin/bash
+VERSION="v0.1 18/05/2020"
+
+ARCHIVO_TODO="/home/angel/ttodo/todo.txt"
+SCRIPT_PATH="$HOME/ttodo"
+
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "h" ]
+then
+echo " 
+Modo de empleo: dockerc [OPCIONES]                                                                                                                                                                                
+
+tt t          Iniciar contador
+tt r          Resumen del tiempo empleado en una tarea
+tt ls         Listar tareas
+tt palabra    Filtrar por palabra
+tt a, add     Añadir tarea
+
+ttodo "$VERSION"
+Copyright (C) 2020 Angel. uGeek                                                                                                                                                                                  
+ ugeekpodcast@gmail.com"
+exit
+fi
+
+
+
+
+
+if [ "$1" = "ls" ]
+then
+clear
+    cat $ARCHIVO_TODO | nl -s "|  "
+exit
+fi
+
+
+if [ "$1" = "a" ] || [ "$1" = "add" ]
+then
+echo "$*" | cut -d " " -f2- >> $ARCHIVO_TODO
+    exit
+fi
+
+
+
+if [ "$1" = "t" ]
+   then
+
+clear
+echo -en "Busqueda por palabra: " ; read PALABRA
+echo ""
+cat $ARCHIVO_TODO | nl -s "|  " | grep -i "$PALABRA"
+
+echo ""
+echo -en "Nº: " ; read NUM
+
+echo ""
+cat  $ARCHIVO_TODO | sed -n "$NUM"p > ~/.config/task.tiempo
+sed -i """"$NUM"""d" $ARCHIVO_TODO
+
+
+screen -dmS ttodot $SCRIPT_PATH/ttodot
+screen -dmS ttodonf $SCRIPT_PATH/ttodonf
+
+clear
+echo "Pulsa una tecla para detener el contandor" ; read STOCK
+
+TIME=$(cat ~/.config/log.tiempo)
+echo "$(cat ~/.config/task.tiempo) time:"$TIME":$(date +"%Y%m%d:%T")" >> $ARCHIVO_TODO
+
+clear
+echo "Tiempo: $(cat ~/.config/log.tiempo)"
+echo "Tarea : $(cat $ARCHIVO_TODO | tail -1)"
+
+
+
+screen -XS ttodot quit
+screen -XS ttodonf quit
+exit
+fi
+
+
+if [ "$1" = "all" ]
+then
+clear
+echo -en "Busqueda por palabra: " ; read PALABRA
+echo ""
+cat $ARCHIVO_TODO | nl -s "|  " | grep -i "$PALABRA"
+echo ""
+echo -en "Nº: " ; read NUM
+echo ""
+MINUTOS=$(($(cat  $ARCHIVO_TODO | sed -n "$NUM"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f2 | paste -sd+ - | bc) / 60 ))
+HORAS=$(calc $MINUTOS / 60)
+
+
+
+echo "Total Minutos: $MINUTOS minutos"
+echo "Total Horas  :$HORAS horas"
+exit
+fi
+
+
+clear
+cat $ARCHIVO_TODO | nl -s "|  " | grep -i "$1" | sort
