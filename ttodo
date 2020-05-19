@@ -43,7 +43,7 @@ then
    sudo pip3 install topydo
    sudo pip3 install 'topydo[columns]'
    sudo pip3 install "topydo[prompt]"
-   sudo apt install todotxt-cli
+   sudo apt install todotxt-cli apcalc screen
    echo ""
    echo "¿Cual es el nombre de usuario donde quieres instalar todotxt-cli?" ; read USUARIO
    mkdir -p /home/$USUARIO/.todo
