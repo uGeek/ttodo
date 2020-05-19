@@ -1,0 +1,148 @@
+#!/bin/bash
+VERSION="v0.1.2 19/05/2020"
+
+ARCHIVO_TODO="/home/angel/todo/todo.txt"
+SCRIPT_PATH="$HOME/ttodo"
+TOPYDO="topydo -t ~/todo/todo.txt -d ~/02_Org/todo/done.txt"
+
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "h" ]
+then
+echo " 
+Modo de empleo: dockerc [OPCIONES]                                                                                                                                                                                
+
+tt t nº_tarea   Iniciar contador
+tt r nº_tarea   Resumen del tiempo empleado en una tarea
+tt ls           Listar tareas
+tt palabra      Filtrar por palabra
+tt a, add       Añadir tarea
+tt d            Borrar tarea
+tt p, pri       Añadir prioridad
+
+
+ttodo "$VERSION"
+Copyright (C) 2020 Angel. uGeek                                                                                                                                                                                  
+ ugeekpodcast@gmail.com"
+exit
+fi
+
+
+function list {
+clear
+N="1"    
+while read LINEA;
+do
+    echo "|    "$N" | "$LINEA""
+    N=$(echo $((1 + $N)))
+    if [ "$N" = "10" ]
+    then
+	break
+    fi
+done < $ARCHIVO_TODO
+N="1"    
+while read LINEA;
+do
+    echo "|   "$N" | "$LINEA""
+    N=$(echo $((1 + $N)))
+    if [ "$N" = "100" ]
+    then
+	break
+    fi
+done < $ARCHIVO_TODO | tail -n +10
+N="1"    
+while read LINEA;
+do
+    echo "|  "$N" | "$LINEA""
+    N=$(echo $((1 + $N)))
+    if [ "$N" = "1000" ]
+    then
+	break
+    fi
+done < $ARCHIVO_TODO | tail -n +100
+N="1"    
+while read LINEA;
+do
+    echo "| "$N" | "$LINEA""
+    N=$(echo $((1 + $N)))
+    if [ "$N" = "10000" ]
+    then
+	break
+    fi
+done < $ARCHIVO_TODO | tail -n +1000
+}
+
+if [ "$1" = "a" ] || [ "$1" = "add" ]
+then
+echo "$*" | cut -d " " -f2- >> $ARCHIVO_TODO
+echo ""
+cat $ARCHIVO_TODO | nl -s ".- " | tail -1 
+echo ""
+exit
+fi
+
+if [ "$1" = "ls" ]
+then
+list
+exit
+fi
+
+if [ "$1" = "t" ]
+then
+
+echo ""
+cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.tiempo
+sed -i """"$2"""d" $ARCHIVO_TODO
+
+screen -dmS ttodot $SCRIPT_PATH/ttodot
+screen -dmS ttodonf $SCRIPT_PATH/ttodonf
+
+clear
+echo "Pulsa una tecla para detener el contandor" ; read STOCK
+
+TIME=$(cat ~/.config/log.tiempo)
+echo "$(cat ~/.config/task.tiempo) time:"$TIME":$(date +"%Y%m%d:%T")" >> $ARCHIVO_TODO 
+clear
+echo "Tiempo: $(cat ~/.config/log.tiempo)"
+echo "Tarea : $(cat $ARCHIVO_TODO | tail -1)"
+screen -XS ttodot quit
+screen -XS ttodonf quit
+exit
+fi
+
+if [ "$1" = "d" ]
+then
+if [ "$2" = "" ]
+then
+    exit
+    fi
+echo ""
+sed -i """"$2"""d" $ARCHIVO_TODO
+exit
+fi
+
+if [ "$1" = "e" ]
+then
+if [ "$2" = "" ]
+then
+    exit
+    fi
+    cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/edit.tiempo
+sed -i """"$2"""d" $ARCHIVO_TODO
+$EDITOR ~/.config/edit.tiempo
+cat ~/.config/edit.tiempo >> $ARCHIVO_TODO
+rm cat ~/.config/edit.tiempo
+fi
+
+if [ "$1" = "r" ]
+then
+clear
+MINUTOS=$(($(cat  $ARCHIVO_TODO | sed -n "$2"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f2 | paste -sd+ - | bc) / 60 ))
+HORAS=$(calc $MINUTOS / 60)
+
+echo "Total Minutos:  $MINUTOS minutos"
+echo "Total Horas  :$HORAS horas"
+exit
+fi
+
+clear
+list  | grep -i "$1" | sort
