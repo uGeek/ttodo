@@ -1,101 +1,66 @@
 #!/bin/bash
-VERSION="v0.1.1 18/05/2020"
+VERSION="v0.1.2 18/05/2020"
 
-ARCHIVO_TODO="/home/angel/todo.txt"
+ARCHIVO_TODO="/home/angel/todo/todo.txt"
+ARCHIVO_DONE="/home/angel/todo/done.txt"
 SCRIPT_PATH="$HOME/ttodo"
+
+
+TOPYDO="topydo -t "$ARCHIVO_TODO" -d "$ARCHIVO_DONE""
+TOPYDOP="topydo -t "$ARCHIVO_TODO" -d "$ARCHIVO_DONE" prompt"
+TOPYDOC="topydo -t "$ARCHIVO_TODO" -d "$ARCHIVO_DONE" columns"
+TODOTXT_MACHINE="todotxt-machine "$ARCHIVO_TODO" "$ARCHIVO_DONE""
+TODOTXTCLI="todo-txt"
+
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "h" ]
 then
 echo " 
-Modo de empleo: dockerc [OPCIONES]                                                                                                                                                                                
+todo.txt en uno. topydo + todotxt-machine + control de tiempo
 
-tt t          Iniciar contador
-tt r          Resumen del tiempo empleado en una tarea
-tt ls         Listar tareas
-tt palabra    Filtrar por palabra
-tt a, add     Añadir tarea
-tt p, pri     Añadir prioridad
+Modo de empleo: ttodo [OPCIONES]    
+t -t             Inicio de todotxt-cli 
+t -p             Inicio de topydo prompt           
+t -c             Inicio de topydo columns
+t -m             Inicio de todotxt-machine
+t  t  nº_tarea   Iniciar contador
+t  r  nº_tarea   Resumen del tiempo empleado en una tarea
 
 ttodo "$VERSION"
 Copyright (C) 2020 Angel. uGeek                                                                                                                                                                                  
  ugeekpodcast@gmail.com"
+
+
+
+
 exit
 fi
 
 
-function list {
-clear
-N="1"    
-while read LINEA;
-do
-    echo "|    "$N" | "$LINEA""
-    N=$(echo $((1 + $N)))
-    if [ "$N" = "10" ]
-    then
-	break
-    fi
-done < $ARCHIVO_TODO
-N="1"    
-while read LINEA;
-do
-    echo "|   "$N" | "$LINEA""
-    N=$(echo $((1 + $N)))
-    if [ "$N" = "100" ]
-    then
-	break
-    fi
-done < $ARCHIVO_TODO | tail -n +10
-N="1"    
-while read LINEA;
-do
-    echo "|  "$N" | "$LINEA""
-    N=$(echo $((1 + $N)))
-    if [ "$N" = "1000" ]
-    then
-	break
-    fi
-done < $ARCHIVO_TODO | tail -n +100
-N="1"    
-while read LINEA;
-do
-    echo "| "$N" | "$LINEA""
-    N=$(echo $((1 + $N)))
-    if [ "$N" = "10000" ]
-    then
-	break
-    fi
-done < $ARCHIVO_TODO | tail -n +1000
-}
-
-if [ "$1" = "a" ] || [ "$1" = "add" ]
+if [ "$1" = "-i" ]
 then
-echo "$*" | cut -d " " -f2- >> $ARCHIVO_TODO
+   sudo pip3 install todotxt-machine
+   sudo pip3 install topydo
+   sudo pip3 install 'topydo[columns]'
+   sudo pip3 install "topydo[prompt]"
+   sudo apt install todotxt-cli
+   echo ""
+   echo "¿Cual es el nombre de usuario donde quieres instalar todotxt-cli?" ; read USUARIO
+   mkdir -p /home/$USUARIO/.todo
+   echo "export TODO_DIR="'"'"$(echo $ARCHIVO_TODO | sed 's|todo.txt||'g)"'"'"" > /home/$USUARIO/.todo/config
+   echo "export TODO_FILE="'"$TODO_DIR/todo.txt"'"" >> /home/$USUARIO/.todo/config
+   echo "export DONE_FILE="'"$TODO_DIR/done.txt"'"" >> /home/$USUARIO/.todo/config
+   echo "export REPORT_FILE="'"$TODO_DIR/report.txt"'"" >> /home/$USUARIO/.todo/config 
+   echo "export TMP_FILE="'"/tmp/todo.tmp"'"" >> /home/$USUARIO/.todo/config
+   echo "export TODOTXT_DEFAULT_ACTION=ls" >> /home/$USUARIO/.todo/config   
+   exit
 fi
-
-
-
-
-if [ "$1" = "ls" ]
-then
-list
-exit
-fi
-
 
 if [ "$1" = "t" ]
-   then
-clear
-echo -en "Busqueda por palabra: " ; read PALABRA
+then
 echo ""
-#cat $ARCHIVO_TODO | nl -s "|  " | grep -i "$PALABRA"
-list  | grep -i "$PALABRA"
-echo ""
-echo -en "Nº: " ; read NUM
-
-echo ""
-cat  $ARCHIVO_TODO | sed -n "$NUM"p > ~/.config/task.tiempo
-sed -i """"$NUM"""d" $ARCHIVO_TODO
-
+cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.tiempo
+sed -i """"$2"""d" $ARCHIVO_TODO
 
 screen -dmS ttodot $SCRIPT_PATH/ttodot
 screen -dmS ttodonf $SCRIPT_PATH/ttodonf
@@ -104,41 +69,47 @@ clear
 echo "Pulsa una tecla para detener el contandor" ; read STOCK
 
 TIME=$(cat ~/.config/log.tiempo)
-echo "$(cat ~/.config/task.tiempo) time:"$TIME":$(date +"%Y%m%d:%T")" >> $ARCHIVO_TODO
-
+echo "$(cat ~/.config/task.tiempo) time:"$TIME":$(date +"%Y%m%d:%T")" >> $ARCHIVO_TODO 
 clear
 echo "Tiempo: $(cat ~/.config/log.tiempo)"
 echo "Tarea : $(cat $ARCHIVO_TODO | tail -1)"
-
-
-
 screen -XS ttodot quit
 screen -XS ttodonf quit
 exit
 fi
 
-
 if [ "$1" = "r" ]
 then
 clear
-echo -en "Busqueda por palabra: " ; read PALABRA
-echo ""
-list  | grep -i "$PALABRA"
-#cat $ARCHIVO_TODO | nl -s "|  " | grep -i "$PALABRA"
-echo ""
-echo -en "Nº: " ; read NUM
-echo ""
-MINUTOS=$(($(cat  $ARCHIVO_TODO | sed -n "$NUM"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f2 | paste -sd+ - | bc) / 60 ))
+MINUTOS=$(($(cat  $ARCHIVO_TODO | sed -n "$2"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f2 | paste -sd+ - | bc) / 60 ))
 HORAS=$(calc $MINUTOS / 60)
-
-
-
-echo "Total Minutos: $MINUTOS minutos"
+echo "Total Minutos:  $MINUTOS minutos"
 echo "Total Horas  :$HORAS horas"
 exit
 fi
 
+if [ "$1" = "-p" ]
+then
+$TOPYDOP
+exit
+fi
 
-clear
-#cat $ARCHIVO_TODO | nl -s "|  " | grep -i "$1" | sort
-list  | grep -i "$1" | sort
+if [ "$1" = "-c" ]
+then
+$TOPYDOC
+exit
+fi
+
+if [ "$1" = "-m" ]
+then
+$TODOTXT_MACHINE    
+exit
+fi
+
+if [ "$1" = "-t" ]
+then
+$TODOTXTCLI    
+exit
+fi
+
+$TOPYDO $*
