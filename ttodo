@@ -1,8 +1,8 @@
 #!/bin/bash
-VERSION="v0.1.2 18/05/2020"
+VERSION="v0.1.3 08/08/2020"
 
-ARCHIVO_TODO="/home/angel/todo/todo.txt"
-ARCHIVO_DONE="/home/angel/todo/done.txt"
+ARCHIVO_TODO="/home/angel/filerun/todo/todo.txt"
+ARCHIVO_DONE="/home/angel/filerun/todo/done.txt"
 SCRIPT_PATH="$HOME/ttodo"
 
 
@@ -25,6 +25,7 @@ t -c             Inicio de topydo columns
 t -m             Inicio de todotxt-machine
 t  t  nº_tarea   Iniciar contador
 t  r  nº_tarea   Resumen del tiempo empleado en una tarea
+t -i             Instalar todas las app's para versiones debian y derivadas 
 
 ttodo "$VERSION"
 Copyright (C) 2020 Angel. uGeek                                                                                                                                                                                  
@@ -111,5 +112,16 @@ then
 $TODOTXTCLI    
 exit
 fi
+
+if [ "$1" = "-i" ]
+then
+    sudo pip3 install topydo
+    sudo pip3 install "topydo[prompt]"
+    sudo pip3 install 'topydo[columns]'
+    sudo apt install todotxt-cli
+    sudo pip3 install todotxt-machine
+exit
+fi
+
 
 $TOPYDO $*
