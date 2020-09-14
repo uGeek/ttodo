@@ -1,8 +1,8 @@
-#!/bin/bash
-VERSION="v0.1.3 08/08/2020"
+#!/bin/bash                      
+VERSION="v0.1.4 14/09/2020"
 
-ARCHIVO_TODO="/home/angel/filerun/todo/todo.txt"
-ARCHIVO_DONE="/home/angel/filerun/todo/done.txt"
+ARCHIVO_TODO="/home/angel/todo/todo.txt"
+ARCHIVO_DONE="/home/angel/todo/done.txt"
 SCRIPT_PATH="$HOME/ttodo"
 
 
@@ -61,19 +61,33 @@ if [ "$1" = "t" ]
 then
 echo ""
 cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.tiempo
-sed -i """"$2"""d" $ARCHIVO_TODO
+
+sed "$2d" $ARCHIVO_TODO  > $ARCHIVO_TODO.b
+
+echo "0" > ~/.config/log.tiempo
+
+sed -i "$2d" $ARCHIVO_TODO
 
 screen -dmS ttodot $SCRIPT_PATH/ttodot
 screen -dmS ttodonf $SCRIPT_PATH/ttodonf
 
 clear
-echo "Pulsa una tecla para detener el contandor" ; read STOCK
+echo "Contabilizando el tiempo de la tarea:" 
+echo ""
+echo "  - $( cat ~/.config/task.tiempo)"
+echo ""
+echo "  Pulsa una tecla para detener el contandor" ; read STOCK
 
 TIME=$(cat ~/.config/log.tiempo)
-echo "$(cat ~/.config/task.tiempo) time:"$TIME":$(date +"%Y%m%d:%T")" >> $ARCHIVO_TODO 
+echo "$(cat ~/.config/task.tiempo) time:"$TIME":$(date +"%Y%m%d:%T")" >> $ARCHIVO_TODO.b
+cp $ARCHIVO_TODO.b $ARCHIVO_TODO
+
 clear
+echo ""
 echo "Tiempo: $(cat ~/.config/log.tiempo)"
+echo ""
 echo "Tarea : $(cat $ARCHIVO_TODO | tail -1)"
+echo ""
 screen -XS ttodot quit
 screen -XS ttodonf quit
 exit
@@ -82,10 +96,23 @@ fi
 if [ "$1" = "r" ]
 then
 clear
-MINUTOS=$(($(cat  $ARCHIVO_TODO | sed -n "$2"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f2 | paste -sd+ - | bc) / 60 ))
-HORAS=$(calc $MINUTOS / 60)
-echo "Total Minutos:  $MINUTOS minutos"
-echo "Total Horas  :$HORAS horas"
+MIN=$(cat  $ARCHIVO_TODO | sed -n "$2"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f2 | paste -sd+ - | bc )
+
+echo ""
+echo "Tarea: "
+echo "---------------------"
+echo "$(cat  $ARCHIVO_TODO | sed -n "$2"p)"
+echo ""
+echo ""
+echo "Tiempo total: $(printf '%dh:%dm\n' $(($MIN/60)) $(($MIN%60/1)))"
+echo "---------------------"
+echo "Resumen de tiempos:"
+cat $ARCHIVO_TODO | sed -n "$2"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f2 | sed 's/$/ min/' | sed 's/^/- /'
+echo ""
+echo "Dias de los registros de tiempo:"
+echo "--------------------------------"
+cat $ARCHIVO_TODO  | sed -n "$2"p |  tr -s '[:blank:]' '\n' | grep "time:" | cut -d ":" -f3 | column| sed s'|\t|,|'g
+echo ""
 exit
 fi
 
@@ -118,10 +145,11 @@ then
     sudo pip3 install topydo
     sudo pip3 install "topydo[prompt]"
     sudo pip3 install 'topydo[columns]'
-    sudo apt install todotxt-cli
+    sudo apt install todotxt-cli screen bc
     sudo pip3 install todotxt-machine
+    sudo chmod +x *
 exit
 fi
 
-
 $TOPYDO $*
+
