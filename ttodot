@@ -1,17 +1,17 @@
 #!/bin/bash
 
 T="0"
-REFRESCO="5"
+REFRESCO="60"
 date +"%H:%M:%S"
 sleep $REFRESCO
 clear
 
 while true
 do
-T=$(echo $((5 + $T)))
+T=$(echo $((1 + $T)))
 date +"%H:%M:%S"
-echo "La tarea lleva $T seg"
 echo "$T" > ~/.config/log.tiempo
 sleep $REFRESCO
 clear
+echo "La tarea $(cat ~/.config/task.tiempo) lleva $T min"
 done
