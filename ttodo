@@ -1,10 +1,12 @@
-#!/bin/bash                      
-VERSION="v0.1.4 14/09/2020"
+#!/bin/bash
+VERSION="v0.1.5 14/09/2020"
 
 ARCHIVO_TODO="/home/angel/todo/todo.txt"
 ARCHIVO_DONE="/home/angel/todo/done.txt"
-SCRIPT_PATH="$HOME/ttodo"
+TODO_NOTES="/home/angel/notes"
+EDITOR="emacs -q -nw"
 
+SCRIPT_PATH="$HOME/ttodo"
 
 TOPYDO="topydo -t "$ARCHIVO_TODO" -d "$ARCHIVO_DONE""
 TOPYDOP="topydo -t "$ARCHIVO_TODO" -d "$ARCHIVO_DONE" prompt"
@@ -25,6 +27,7 @@ t -c             Inicio de topydo columns
 t -m             Inicio de todotxt-machine
 t  t  nº_tarea   Iniciar contador
 t  r  nº_tarea   Resumen del tiempo empleado en una tarea
+t  n  nº_tarea   Añadir una nota
 t -i             Instalar todas las app's para versiones debian y derivadas 
 
 ttodo "$VERSION"
@@ -57,6 +60,48 @@ then
    exit
 fi
 
+
+if [ "$1" = "n" ]
+then
+echo ""
+clear
+mkdir -p $TODO_NOTES
+#grep "\[\[*" ~/todo/todo.txt
+
+cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.notes
+sed "$2d" $ARCHIVO_TODO  > $ARCHIVO_TODO.b
+
+echo ""
+echo "Tarea: "
+echo "---------------------"
+echo "$(cat  $ARCHIVO_TODO | sed -n "$2"p)"
+echo ""
+
+echo -en "¿Que nombre de nota quieres utilizar?: "
+read NOMBREB
+
+NOMBRE=$(echo $NOMBREB | sed s'| |-|'g)
+
+if [ ! -f ""$EDITOR $TODO_NOTES/$NOMBRE.md"" ]; then
+echo "existe"
+$EDITOR $TODO_NOTES/$NOMBRE.md
+exit
+fi
+
+echo -e "# $NOMBRE\n## $(cat $ARCHIVO_TODO | sed -n $2p)" > $TODO_NOTES/$NOMBRE.md
+echo "$(cat  ~/.config/task.notes) [[$NOMBRE]]" >> $ARCHIVO_TODO.b
+
+cp $ARCHIVO_TODO.b $ARCHIVO_TODO
+
+tail -1 $ARCHIVO_TODO
+echo ""
+
+$EDITOR $TODO_NOTES/$NOMBRE.md
+
+exit
+fi
+
+
 if [ "$1" = "t" ]
 then
 echo ""
@@ -66,7 +111,6 @@ sed "$2d" $ARCHIVO_TODO  > $ARCHIVO_TODO.b
 
 echo "0" > ~/.config/log.tiempo
 
-sed -i "$2d" $ARCHIVO_TODO
 
 screen -dmS ttodot $SCRIPT_PATH/ttodot
 screen -dmS ttodonf $SCRIPT_PATH/ttodonf
@@ -150,6 +194,7 @@ then
     sudo chmod +x *
 exit
 fi
+
 
 $TOPYDO $*
 
