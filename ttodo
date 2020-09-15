@@ -1,10 +1,10 @@
 #!/bin/bash
-VERSION="v0.1.5 14/09/2020"
+VERSION="v0.1.6.4 15/09/2020"
 
 ARCHIVO_TODO="/home/angel/todo/todo.txt"
 ARCHIVO_DONE="/home/angel/todo/done.txt"
 TODO_NOTES="/home/angel/notes"
-EDITOR="emacs -q -nw"
+EDITOR="typora" #"emacs -q -nw"
 
 SCRIPT_PATH="$HOME/ttodo"
 
@@ -19,7 +19,6 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ] || [ "$1" = "h" ]
 then
 echo " 
 todo.txt en uno. topydo + todotxt-machine + control de tiempo
-
 Modo de empleo: ttodo [OPCIONES]    
 t -t             Inicio de todotxt-cli 
 t -p             Inicio de topydo prompt           
@@ -28,8 +27,8 @@ t -m             Inicio de todotxt-machine
 t  t  nº_tarea   Iniciar contador
 t  r  nº_tarea   Resumen del tiempo empleado en una tarea
 t  n  nº_tarea   Añadir una nota
+t  c  nº_tarea   Cambiar el contexto
 t -i             Instalar todas las app's para versiones debian y derivadas 
-
 ttodo "$VERSION"
 Copyright (C) 2020 Angel. uGeek                                                                                                                                                                                  
  ugeekpodcast@gmail.com"
@@ -65,11 +64,29 @@ if [ "$1" = "n" ]
 then
 echo ""
 clear
+
+
 mkdir -p $TODO_NOTES
-#grep "\[\[*" ~/todo/todo.txt
+
 
 cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.notes
 sed "$2d" $ARCHIVO_TODO  > $ARCHIVO_TODO.b
+
+
+
+# Existe nota
+NOTE=$(cat  ~/.config/task.notes | cut -d "[" -f2- |  cut -d "[" -f2- |  cut -d "]" -f1)
+FILE=$TODO_NOTES/$NOTE.md
+
+if [ -f "$FILE" ]
+then
+    echo ""
+    echo "Tarea: "
+    echo "  - $(cat ~/.config/task.notes)"
+    echo ""
+    $EDITOR $TODO_NOTES/$NOTE.md
+    exit
+fi
 
 echo ""
 echo "Tarea: "
@@ -82,13 +99,7 @@ read NOMBREB
 
 NOMBRE=$(echo $NOMBREB | sed s'| |-|'g)
 
-if [ ! -f ""$EDITOR $TODO_NOTES/$NOMBRE.md"" ]; then
-echo "existe"
-$EDITOR $TODO_NOTES/$NOMBRE.md
-exit
-fi
-
-echo -e "# $NOMBRE\n## $(cat $ARCHIVO_TODO | sed -n $2p)" > $TODO_NOTES/$NOMBRE.md
+echo -e "# $NOMBREB" > $TODO_NOTES/$NOMBRE.md
 echo "$(cat  ~/.config/task.notes) [[$NOMBRE]]" >> $ARCHIVO_TODO.b
 
 cp $ARCHIVO_TODO.b $ARCHIVO_TODO
@@ -120,7 +131,7 @@ echo "Contabilizando el tiempo de la tarea:"
 echo ""
 echo "  - $( cat ~/.config/task.tiempo)"
 echo ""
-echo "  Pulsa una tecla para detener el contandor" ; read STOCK
+echo "  Pulsa una tecla "ENTER" para detener el contandor" ; read STOCK
 
 TIME=$(cat ~/.config/log.tiempo)
 echo "$(cat ~/.config/task.tiempo) time:"$TIME":$(date +"%Y%m%d:%T")" >> $ARCHIVO_TODO.b
@@ -190,11 +201,46 @@ then
     sudo pip3 install "topydo[prompt]"
     sudo pip3 install 'topydo[columns]'
     sudo apt install todotxt-cli screen bc
+    sudo apt install libnotify-bin notify-osd # notificaciones
     sudo pip3 install todotxt-machine
     sudo chmod +x *
 exit
 fi
 
+# alias
+if [ "$1" = "e" ]
+then
+$TOPYDO edit $2    
+exit
+fi
+
+if [ "$1" = "a" ]
+then
+$TOPYDO add $2    
+exit
+fi
+
+if [ "$1" = "c" ]
+then
+cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.context
+sed "$2d" $ARCHIVO_TODO  > $ARCHIVO_TODO.b
+echo ""
+echo "Selecciona el número del contexto a cambiar:"
+echo "--------------------------------------------"
+$TOPYDO lscon | nl -s "."
+echo ""
+$TOPYDO lscon > ~/.config/task.context_menu
+echo -en "número: "
+read NUMERO
+echo "-------------------------------------------"
+echo "$(sed s'|@\w*||'g  ~/.config/task.context) @$(awk 'NR=='$NUMERO'' ~/.config/task.context_menu)"
+echo "-------------------------------------------"
+echo ""
+echo "$(sed s'|@\w*||'g  ~/.config/task.context) @$(awk 'NR=='$NUMERO'' ~/.config/task.context_menu)" >> $ARCHIVO_TODO.b
+cp $ARCHIVO_TODO.b $ARCHIVO_TODO
+exit
+fi
+
+
 
 $TOPYDO $*
-
