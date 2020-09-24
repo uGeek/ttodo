@@ -1,10 +1,10 @@
 #!/bin/bash
-VERSION="v0.1.6.4 15/09/2020"
+VERSION="v0.1.6.5 17/09/2020"
 
-ARCHIVO_TODO="/home/angel/todo/todo.txt"
-ARCHIVO_DONE="/home/angel/todo/done.txt"
-TODO_NOTES="/home/angel/notes"
-EDITOR="typora" #"emacs -q -nw"
+ARCHIVO_TODO="/home/oliver/todo/todo.txt"
+ARCHIVO_DONE="/home/oliver/todo/done.txt"
+TODO_NOTES="/home/oliver/notes"
+EDITOR="emacs -q -nw"
 
 SCRIPT_PATH="$HOME/ttodo"
 
@@ -26,8 +26,9 @@ t -c             Inicio de topydo columns
 t -m             Inicio de todotxt-machine
 t  t  nº_tarea   Iniciar contador
 t  r  nº_tarea   Resumen del tiempo empleado en una tarea
-t  n  nº_tarea   Añadir una nota
-t  c  nº_tarea   Cambiar el contexto
+t  n  nº_tarea   Añadir una not
+t  +  nº_tarea   Cambiar el proyecto
+t  @  nº_tarea   Cambiar el contexto
 t -i             Instalar todas las app's para versiones debian y derivadas 
 ttodo "$VERSION"
 Copyright (C) 2020 Angel. uGeek                                                                                                                                                                                  
@@ -220,7 +221,7 @@ $TOPYDO add $2
 exit
 fi
 
-if [ "$1" = "c" ]
+if [ "$1" = "@" ]
 then
 cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.context
 sed "$2d" $ARCHIVO_TODO  > $ARCHIVO_TODO.b
@@ -241,6 +242,25 @@ cp $ARCHIVO_TODO.b $ARCHIVO_TODO
 exit
 fi
 
-
+if [ "$1" = "+" ]
+then
+cat  $ARCHIVO_TODO | sed -n "$2"p > ~/.config/task.context
+sed "$2d" $ARCHIVO_TODO  > $ARCHIVO_TODO.b
+echo ""
+echo "Selecciona el número del contexto a cambiar:"
+echo "--------------------------------------------"
+$TOPYDO  lsproj | nl -s "."
+echo ""
+$TOPYDO  lsproj > ~/.config/task.context_menu
+echo -en "número: "
+read NUMERO
+echo "-------------------------------------------"
+echo "$(sed s'|+\w*||'g  ~/.config/task.context) +$(awk 'NR=='$NUMERO'' ~/.config/task.context_menu)"
+echo "-------------------------------------------"
+echo ""
+echo "$(sed s'|+\w*||'g  ~/.config/task.context) +$(awk 'NR=='$NUMERO'' ~/.config/task.context_menu)" >> $ARCHIVO_TODO.b
+cp $ARCHIVO_TODO.b $ARCHIVO_TODO
+exit
+fi
 
 $TOPYDO $*
