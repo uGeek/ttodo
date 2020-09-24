@@ -1,9 +1,9 @@
 #!/bin/bash
 VERSION="v0.1.6.5 17/09/2020"
 
-ARCHIVO_TODO="/home/oliver/todo/todo.txt"
-ARCHIVO_DONE="/home/oliver/todo/done.txt"
-TODO_NOTES="/home/oliver/notes"
+ARCHIVO_TODO="/home/angel/todo/todo.txt"
+ARCHIVO_DONE="/home/angel/todo/done.txt"
+TODO_NOTES="/home/angel/notes"
 EDITOR="emacs -q -nw"
 
 SCRIPT_PATH="$HOME/ttodo"
