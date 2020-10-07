@@ -7,17 +7,15 @@
 #   */2 * * * * /home/angel/.control_versiones.sh
 #
 
-
-FILE1="/home/angel/todo/todo.txt"
-FILE2="/home/angel/todo/.todotxt/todo.txt"
-
+TODOTXT="/home/angel/todo/todo.txt"
+FOLDER="/home/angel/todo/.todotxt/"
 
 
-COMPARA=$(diff $FILE1 $FILE2)
 
-if [ "$COMPARA" != "" ]
+COMPARA=$(diff $TODOTXT $FOLDER/todo.txt)
+
+if [ "$COMPARA" != "" ] 
 then
-mv $FILE2 $FILE2-$(date +%y%m%d-%H%M)
-cp $FILE1 $FILE2
+mv $FOLDER/todo.txt $FOLDER/$(date +%y%m%d-%H%M)_todo.txt
+cp $TODOTXT $FOLDER/todo.txt
 fi
-
