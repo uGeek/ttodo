@@ -25,3 +25,6 @@ echo "" >> $1.md
 
 
 taskell $1.md
+
+
+cat $1.md | sed s'|- ||'g | grep -v "^##" | grep .
