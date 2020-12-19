@@ -43,6 +43,7 @@ fi
 
 if [ "$1" = "-i" ]
 then
+   sudo apt install python3-pip
    sudo pip3 install todotxt-machine
    sudo pip3 install topydo
    sudo pip3 install 'topydo[columns]'
