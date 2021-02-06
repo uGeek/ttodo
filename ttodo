@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="v0.1.6.5 17/09/2020"
+VERSION="v0.1.6.6 06/02/2021"
 
 ARCHIVO_TODO="/home/angel/todo/todo.txt"
 ARCHIVO_DONE="/home/angel/todo/done.txt"
@@ -43,7 +43,6 @@ fi
 
 if [ "$1" = "-i" ]
 then
-   sudo apt install python3-pip
    sudo pip3 install todotxt-machine
    sudo pip3 install topydo
    sudo pip3 install 'topydo[columns]'
@@ -57,7 +56,11 @@ then
    echo "export DONE_FILE="'"$TODO_DIR/done.txt"'"" >> /home/$USUARIO/.todo/config
    echo "export REPORT_FILE="'"$TODO_DIR/report.txt"'"" >> /home/$USUARIO/.todo/config 
    echo "export TMP_FILE="'"/tmp/todo.tmp"'"" >> /home/$USUARIO/.todo/config
-   echo "export TODOTXT_DEFAULT_ACTION=ls" >> /home/$USUARIO/.todo/config   
+   echo "export TODOTXT_DEFAULT_ACTION=ls" >> /home/$USUARIO/.todo/config
+   mkdir -p ~/.config/topydo
+   echo "¿Que editor de texto quieres utilizar?. Ejemplo: emacs -q -nw" ; read EDITOR
+   echo "[edit]"                 > /home/$USUARIO/.config/topydo/config
+   echo "editor = $EDITOR"       >> /home/$USUARIO/.config/topydo/config
    exit
 fi
 
